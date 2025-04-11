@@ -21,6 +21,9 @@ setup(
     url = "https://github.com/numlinka/pyezudesign",
     package_dir={"": "src"},
     packages = ["ezudesign"],
+    install_requires=[
+        "typex>=0.3.0"
+    ],
     classifiers=[
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Programming Language :: Python :: 3",
