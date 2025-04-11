@@ -28,6 +28,9 @@ from base64 import b64encode, b64decode
 from typing import Iterable, Mapping, Optional
 from dataclasses import dataclass, field
 
+# typex
+from typex import Static
+
 
 class ConfigurationBaseException (Exception): ...
 class ConfigKeyDoesNotExist (ConfigurationBaseException): ...
@@ -37,7 +40,7 @@ class ConfigFileTypeNotSpecified (ConfigurationBaseException): ...
 class ConfigFileTypeNotSupported (ConfigurationBaseException): ...
 
 
-class ConfigFileType (object):
+class ConfigFileType (Static):
     JSON = "json"
 
 
