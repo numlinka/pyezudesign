@@ -28,7 +28,7 @@ from base64 import b64encode, b64decode
 from typing import Iterable, Mapping, Optional
 from dataclasses import dataclass, field
 
-# typex
+# site
 from typex import Static
 
 

@@ -9,7 +9,7 @@ __all__ = [
     "TASK_FLOW_EXCEPT",
     "StopTaskFlow",
     "TaskItem",
-    "DefaultAction",
+    "TaskFlowDefaultAction",
     "TaskFlow"
 ]
 
@@ -21,9 +21,11 @@ from typing import Optional, Iterable, Mapping, Callable, Any
 from dataclasses import dataclass
 
 # site
-import typex
+from typex import Static, MultitonAtomic
 
 
+TASK_FLOW_ADD = "task_flow_add"
+TASK_FLOW_REMOVE = "task_flow_remove"
 TASK_FLOW_START = "task_flow_start"
 TASK_FLOW_EXEC = "task_flow_exec"
 TASK_FLOW_STOP = "task_flow_stop"
@@ -43,7 +45,7 @@ class TaskItem (object):
 class StopTaskFlow (Exception): ...
 
 
-class DefaultAction (typex.Static):
+class TaskFlowDefaultAction (Static):
     @staticmethod
     def callback(self: "TaskFlow", action: str, detail: Optional[TaskItem | Exception] = None) -> None:
         ...
@@ -58,10 +60,10 @@ class DefaultAction (typex.Static):
 
 
 class TaskFlow (object):
-    def __init__(self, name: Optional[str] = None):
+    def __init__(self, name: Optional[str] = None) -> None:
         self._lock = threading.RLock()
         self.__name = type(self).__name__ if name is None else name
-        self.__count = typex.MultitonAtomic(instance_name="numlinka - TaskFlow")
+        self.__atomic = MultitonAtomic(instance_name="numlinka - ezudesign - TaskFlow")
         self.__tasks: list[TaskItem] = []
 
     @property
@@ -69,9 +71,8 @@ class TaskFlow (object):
         with self._lock:
             return self.__name
 
-    @property
-    def count(self) -> int:
-        return self.__count.value
+    def callback(self, action: str, detail: Optional[TaskItem | Exception] = None) -> None:
+        TaskFlowDefaultAction.callback(self, action, detail)
 
     def set_name(self, name: str) -> None:
         if not isinstance(name, str):
@@ -102,8 +103,9 @@ class TaskFlow (object):
         if name is None:
             name = task.__name__
 
-        iid = self.count
+        iid = self.__atomic.value
         item = TaskItem(iid, task, priority, name, async_)
+        self.callback(TASK_FLOW_ADD, item)
 
         with self._lock:
             self.__tasks.append(item)
@@ -138,18 +140,16 @@ class TaskFlow (object):
                 return False
 
             del self.__tasks[index]
+            self.callback(TASK_FLOW_REMOVE, item)
             return True
 
-    def callback(self, action: str, detail: Optional[TaskItem | Exception] = None) -> None:
-        DefaultAction.callback(self, action, detail)
-
-    def exec_async_task(self, taskunit: TaskItem, args: Iterable[Any], kwargs: Mapping[str, Any]) -> None:
+    def _exec_async_task(self, taskunit: TaskItem, args: Iterable[Any], kwargs: Mapping[str, Any]) -> None:
         self.callback(TASK_FLOW_EXEC, taskunit)
-        DefaultAction.exec_async_task(self, taskunit, args, kwargs)
+        TaskFlowDefaultAction.exec_async_task(self, taskunit, args, kwargs)
 
-    def exec_sync_task(self, taskunit: TaskItem, args: Iterable[Any], kwargs: Mapping[str, Any]) -> None:
+    def _exec_sync_task(self, taskunit: TaskItem, args: Iterable[Any], kwargs: Mapping[str, Any]) -> None:
         self.callback(TASK_FLOW_EXEC, taskunit)
-        DefaultAction.exec_sync_task(self, taskunit, args, kwargs)
+        TaskFlowDefaultAction.exec_sync_task(self, taskunit, args, kwargs)
 
     def run(self, *args, **kwargs) -> None:
         self.callback(TASK_FLOW_START)
@@ -159,9 +159,9 @@ class TaskFlow (object):
         try:
             for item in copy_tasks:
                 if item.async_:
-                    self.exec_async_task(item, args, kwargs)
+                    self._exec_async_task(item, args, kwargs)
                 else:
-                    self.exec_sync_task(item, args, kwargs)
+                    self._exec_sync_task(item, args, kwargs)
 
             else:
                 self.callback(TASK_FLOW_END)
