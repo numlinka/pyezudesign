@@ -2,7 +2,9 @@
 # ezudesign Copyright (C) 2023 numlinka.
 
 __all__ = [
-    "configuration"
+    "configuration",
+    "eventhub",
+    "taskflow"
 ]
 
 __name__ = "ezudesign"
@@ -15,3 +17,5 @@ __version__ = ".".join(map(str, __version_info__))
 
 # internal
 from . import configuration
+from . import eventhub
+from . import taskflow
