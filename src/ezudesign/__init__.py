@@ -4,7 +4,9 @@
 __all__ = [
     "configuration",
     "eventhub",
-    "taskflow"
+    "taskflow",
+    "taskpool",
+    "tasksequence"
 ]
 
 __name__ = "ezudesign"
@@ -12,10 +14,12 @@ __author__ = "numlinka"
 __license__ = "LGPLv3"
 __copyright__ = "Copyright (C) 2023 numlinka"
 
-__version_info__ = (0, 1, 0)
+__version_info__ = (0, 2, 0)
 __version__ = ".".join(map(str, __version_info__))
 
 # internal
 from . import configuration
 from . import eventhub
 from . import taskflow
+from . import taskpool
+from . import tasksequence
