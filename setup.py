@@ -29,6 +29,5 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     license = "LGPLv3",
-    keywords = ["sample"],
-    install_requires = []
+    keywords = ["sample"]
 )
