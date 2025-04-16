@@ -11,10 +11,10 @@ from dataclasses import dataclass, field
 from typex import MultitonAtomic
 
 
-TASKPOOLNEWTASK = "task_pool_new_task"
-TASKPOOLTASKSTART = "task_pool_task_start"
-TASKPOOLTASKDONE = "task_pool_task_done"
-TASKPOOLTASKEXCEPT = "task_pool_task_except"
+TASKPOOL_NEW_TASK = "task_pool_new_task"
+TASKPOOL_TASK_START = "task_pool_task_start"
+TASKPOOL_TASK_DONE = "task_pool_task_done"
+TASKPOOL_TASK_EXCEPT = "task_pool_task_except"
 
 
 @dataclass
@@ -50,10 +50,8 @@ class TaskPool (object):
         self.__atomic = MultitonAtomic(instance_name="numlinka - ezudesign - TaskPool/TaskID")
         self.__atomic_tpid = MultitonAtomic(instance_name="numlinka - ezudesign - TaskPool/ThreadID")
 
-
     def callback(self, action: str, detail: Optional[TaskUnit | Exception] = None) -> None:
         ...
-
 
     def new_task(self, task: Callable, args: Optional[Iterable[Any]] = None,
                  kwargs: Optional[Mapping[str, Any]] = None, need_return: bool = False) -> int:
@@ -79,7 +77,7 @@ class TaskPool (object):
         with self._lock:
             self.__queue_task.append(unit)
 
-        self.callback(TASKPOOLNEWTASK, unit)
+        self.callback(TASKPOOL_NEW_TASK, unit)
         self.__task_actvicate()
         return iid
 
@@ -132,17 +130,17 @@ class TaskPool (object):
                     unit.done.set()
                     continue
 
-                self.callback(TASKPOOLTASKSTART, unit.task)
+                self.callback(TASKPOOL_TASK_START, unit.task)
                 result = unit.task.task(*unit.task.args, **unit.task.kwargs)
                 if unit.task.need_return:
                     unit.task.result = result
 
             except Exception as e:
-                self.callback(TASKPOOLTASKEXCEPT, unit.task)
+                self.callback(TASKPOOL_TASK_EXCEPT, unit.task)
                 unit.task.exception = e
 
             else:
-                self.callback(TASKPOOLTASKDONE, unit.task)
+                self.callback(TASKPOOL_TASK_DONE, unit.task)
 
             finally:
                 self.__task_done(unit.task)
