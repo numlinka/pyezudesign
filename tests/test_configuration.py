@@ -162,3 +162,13 @@ class TestUtils (unittest.TestCase):
 
         self.assertEqual(config.vint, 10086)
         self.assertEqual(config.vfloat, 3.1415926)
+
+    def test_value_is_null(self):
+        config = Configuration()
+        config.ctrl.new("vint", int, 1)
+        config.ctrl.save_json("test-config-file")
+        config.vint = 2
+        config.ctrl.load_json("test-config-file")
+        self.assertEqual(config.vint, 2)
+
+        os.remove("test-config-file")

@@ -173,14 +173,17 @@ class ConfigurationControl (object):
                 raise ConfigKeyAlreadyExist(f"The config key `{key}` already exists.")
 
             default = default if default is not None else type_()
-            self.__table[key] = ConfigItem(type_, default, ranges, default)
+            self.__table[key] = ConfigItem(type_, default, ranges, None)
 
-    def set(self, key: str, value: int | float | str) -> None :
+    def set(self, key: str, value: Optional[int | float | str] = None) -> None :
         if not isinstance(key, str):
             raise TypeError(f"Expected `key` to be `str`, but got {type(key)}.")
 
-        if not isinstance(value, (int, float, str)):
+        if not isinstance(value, (int, float, str)) and value is not None:
             raise TypeError(f"Expected `value` to be `int`, `float` or `str`, but got {type(value)}.")
+
+        if value is None:
+            return
 
         with self._lock:
             if key not in self.__table:
@@ -218,7 +221,8 @@ class ConfigurationControl (object):
         with self._lock:
             if key in self.__table:
                 item = self.__table[key]
-                return _VARIABLE_CLASS_TABLE[item.type_](self, key, item.value)
+                value = item.default if item.value is None else item.value
+                return _VARIABLE_CLASS_TABLE[item.type_](self, key, value)
 
             elif key in self.__invalid:
                 return self.__invalid[key]
