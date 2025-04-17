@@ -2,7 +2,6 @@
 # ezudesign Copyright (C) 2023 numlinka.
 
 # std
-import time
 import threading
 
 from typing import Callable, Iterable, Mapping, Optional, Any, NoReturn

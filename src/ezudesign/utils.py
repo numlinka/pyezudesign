@@ -1,6 +1,8 @@
 # Licensed under the GNU Lesser General Public License v3.0.
 # ezudesign Copyright (C) 2023 numlinka.
 
+__all__ = ["ExecItem", "try_exec", "exec_item"]
+
 # std
 from typing import Callable, Iterable, Mapping, Optional, Any, NoReturn
 from dataclasses import dataclass, field
@@ -29,3 +31,7 @@ def try_exec(exec_try: ExecItem, exec_except: Optional[ExecItem] = None) -> Any:
 
         else:
             raise e
+
+
+def exec_item(callback: Callable, *args: Any, **kwargs: Any) -> ExecItem:
+    return ExecItem(callback, args, kwargs)
