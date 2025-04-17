@@ -4,7 +4,7 @@
 __all__ = ["ExecItem", "try_exec", "exec_item"]
 
 # std
-from typing import Callable, Iterable, Mapping, Optional, Any, NoReturn
+from typing import Callable, Iterable, Mapping, Optional, Any
 from dataclasses import dataclass, field
 
 
@@ -29,8 +29,7 @@ def try_exec(exec_try: ExecItem, exec_except: Optional[ExecItem] = None) -> Any:
         if exec_except is not None:
             return exec_except.callback(e, *exec_except.args, **exec_except.kwargs)
 
-        else:
-            raise e
+        return e
 
 
 def exec_item(callback: Callable, *args: Any, **kwargs: Any) -> ExecItem:
