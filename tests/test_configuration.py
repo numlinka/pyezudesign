@@ -172,3 +172,11 @@ class TestUtils (unittest.TestCase):
         self.assertEqual(config.vint, 2)
 
         os.remove("test-config-file")
+
+    def test_item_set_and_get(self):
+        config = Configuration()
+        config.ctrl.new("vint", int, 0)
+        self.assertEqual(config["vint"], 0)
+
+        config["vint"] = 1
+        self.assertEqual(config["vint"], 1)

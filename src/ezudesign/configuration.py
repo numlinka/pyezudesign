@@ -119,6 +119,12 @@ class Configuration (object):
 
         self.ctrl.set(name, value)
 
+    def __setitem__(self, name, value) -> None:
+        self.ctrl.set(name, value)
+
+    def __getitem__(self, name) -> "Variable":
+        return self.ctrl.get(name)
+
     def __getattribute__(self, name) -> "Variable":
         if name.startswith("_") or name == "ctrl":
             return super().__getattribute__(name)
