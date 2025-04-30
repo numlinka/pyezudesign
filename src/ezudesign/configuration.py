@@ -88,6 +88,14 @@ class Variable (object):
     def value(self) -> int | float | str:
         return self.__stem.get(self.__key)
 
+    @property
+    def stem(self) -> "Configuration":
+        return self.__stem.surface
+
+    @property
+    def name(self) -> str:
+        return self.__key
+
     def set(self, value: int | float | str) -> None:
         self.__stem.set(self.__key, value)
 
