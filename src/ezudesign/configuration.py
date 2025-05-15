@@ -25,7 +25,7 @@ import inspect
 import threading
 
 from base64 import b64encode, b64decode
-from typing import Iterable, Mapping, Optional
+from typing import Iterable, Mapping, Optional, Type
 from dataclasses import dataclass, field
 
 # site
@@ -46,7 +46,7 @@ class ConfigFileType (Static):
 
 @dataclass
 class ConfigItem (object):
-    type_: int | float | str
+    type_: Type[int | float | str]
     default: Optional[int | float | str] = field(default=None)
     ranges: Optional[Iterable[int | float | str]] = field(default=None)
     value: Optional[int | float | str] = field(default=None)
@@ -56,6 +56,20 @@ class ConfigItem (object):
 class NumericalRange (object):
     min: int | float
     max: int | float
+    float_round: int = field(default=0)
+
+    def __post_init__(self):
+        if not isinstance(self.min, (int, float)):
+            raise TypeError(f"Expected `min` to be `int` or `float`, but got {type(self.min)}.")
+
+        if not isinstance(self.max, (int, float)):
+            raise TypeError(f"Expected `max` to be `int` or `float`, but got {type(self.max)}.")
+
+        if not isinstance(self.float_round, int):
+            raise TypeError(f"Expected `float_round` to be `int`, but got {type(self.float_round)}.")
+        
+        if self.float_round < 0:
+            raise ValueError(f"Expected `float_round` to be greater than or equal to 0, but got {self.float_round}.")
 
 
 @dataclass
@@ -168,7 +182,7 @@ class ConfigurationControl (object):
         with self._lock:
             return self.__last.base64
 
-    def new(self, key: str, type_: int | float | str, default: Optional[int | float | str] = None,
+    def new(self, key: str, type_: Type[int | float | str], default: Optional[int | float | str] = None,
             ranges: Optional[Iterable[int | float | str] | NumericalRange] = None) -> None:
         if not isinstance(key, str):
             raise TypeError(f"Expected `key` to be `str`, but got {type(key)}.")
@@ -211,6 +225,9 @@ class ConfigurationControl (object):
             if (isinstance(item.ranges, NumericalRange) and not (item.ranges.min <= value <= item.ranges.max)) or \
                (isinstance(item.ranges, Iterable) and value not in item.ranges):
                 raise ConfigValueOutOfRange(f"The value `{value}` is inconsistent with the constraint ranges.")
+
+            if item.type_ is float and isinstance(item.ranges, NumericalRange) and item.ranges != 0:
+                value = round(value, item.ranges.float_round)
 
             self.__table[key].value = value
 

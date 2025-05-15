@@ -4,6 +4,7 @@
 # std
 import os
 import unittest
+from math import inf as infinity
 
 # tests
 from ezudesign.configuration import *
@@ -180,3 +181,10 @@ class TestUtils (unittest.TestCase):
 
         config["vint"] = 1
         self.assertEqual(config["vint"], 1)
+
+    def test_item_float_round(self):
+        config = Configuration()
+        config.ctrl.new("vfloat", float, 0.0, NumericalRange(-infinity, infinity, 2))
+        self.assertEqual(config["vfloat"], 0.0)
+        config["vfloat"] = 3.1415926
+        self.assertEqual(config["vfloat"], 3.14)
