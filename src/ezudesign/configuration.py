@@ -56,7 +56,7 @@ class ConfigItem (object):
 class NumericalRange (object):
     min: int | float
     max: int | float
-    float_round: int = field(default=0)
+    round: int = field(default=0)
 
     def __post_init__(self):
         if not isinstance(self.min, (int, float)):
@@ -65,11 +65,11 @@ class NumericalRange (object):
         if not isinstance(self.max, (int, float)):
             raise TypeError(f"Expected `max` to be `int` or `float`, but got {type(self.max)}.")
 
-        if not isinstance(self.float_round, int):
-            raise TypeError(f"Expected `float_round` to be `int`, but got {type(self.float_round)}.")
-        
-        if self.float_round < 0:
-            raise ValueError(f"Expected `float_round` to be greater than or equal to 0, but got {self.float_round}.")
+        if not isinstance(self.round, int):
+            raise TypeError(f"Expected `round` to be `int`, but got {type(self.round)}.")
+
+        if self.round < 0:
+            raise ValueError(f"Expected `round` to be greater than or equal to 0, but got {self.round}.")
 
 
 @dataclass
@@ -220,14 +220,17 @@ class ConfigurationControl (object):
 
             item = self.__table[key]
             if not isinstance(value, item.type_):
-                raise TypeError(f"The value `{value}` is inconsistent with the constraint type.")
+                try:
+                    value = item.type_(value)
+                except ValueError:
+                    raise TypeError(f"The value `{value}` is inconsistent with the constraint type.")
 
             if (isinstance(item.ranges, NumericalRange) and not (item.ranges.min <= value <= item.ranges.max)) or \
                (isinstance(item.ranges, Iterable) and value not in item.ranges):
                 raise ConfigValueOutOfRange(f"The value `{value}` is inconsistent with the constraint ranges.")
 
             if item.type_ is float and isinstance(item.ranges, NumericalRange) and item.ranges != 0:
-                value = round(value, item.ranges.float_round)
+                value = round(value, item.ranges.round)
 
             self.__table[key].value = value
 
