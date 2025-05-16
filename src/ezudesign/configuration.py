@@ -110,6 +110,14 @@ class Variable (object):
     def name(self) -> str:
         return self.__key
 
+    @property
+    def types(self) -> Type[int | float | str]:
+        return self.__stem.get_type(self.__key)
+
+    @property
+    def default(self) -> Optional[int | float | str]:
+        return self.__stem.get_default(self.__key)
+
     def set(self, value: int | float | str) -> None:
         self.__stem.set(self.__key, value)
 
@@ -263,6 +271,17 @@ class ConfigurationControl (object):
 
             raise ConfigKeyDoesNotExist(f"The config key `{key}` does not exist.")
 
+    def get_default(self, key: str) -> Optional[int | float | str]:
+        if not isinstance(key, str):
+            raise TypeError(f"Expected `key` to be `str`, but got {type(key)}.")
+
+        with self._lock:
+            if key not in self.__table:
+                raise ConfigKeyDoesNotExist(f"The config key `{key}` does not exist.")
+
+            item = self.__table[key]
+            return item.default
+
     def get_ranges(self, key: str) -> Optional[Iterable[int | float | str] | NumericalRange]:
         if not isinstance(key, str):
             raise TypeError(f"Expected `key` to be `str`, but got {type(key)}.")
@@ -273,6 +292,17 @@ class ConfigurationControl (object):
 
             item = self.__table[key]
             return copy.copy(item.ranges)
+
+    def get_type(self, key: str) -> Type[int | float | str]:
+        if not isinstance(key, str):
+            raise TypeError(f"Expected `key` to be `str`, but got {type(key)}.")
+
+        with self._lock:
+            if key not in self.__table:
+                raise ConfigKeyDoesNotExist(f"The config key `{key}` does not exist.")
+
+            item = self.__table[key]
+            return item.type_
 
     def load_dict(self, data: Mapping) -> list[str]:
         if not isinstance(data, Mapping):
@@ -351,7 +381,7 @@ class ConfigurationControl (object):
 
 
 def setting(
-        type_: int | float | str,
+        type_: Type[int | float | str],
         default: Optional[int | float | str] = None,
         ranges: Optional[Iterable[int | float | str]] = None
         ) -> Variable:
