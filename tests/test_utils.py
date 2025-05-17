@@ -16,9 +16,13 @@ class TestUtils (unittest.TestCase):
         def func(a, b):
             return a + b
 
-        self.assertEqual(try_exec(exec_item("func", 1, 2)), 3)
+        self.assertEqual(try_exec(exec_item(func, 1, 1)), 2)
+        self.assertEqual(try_exec(exec_item(self.func_test, 1, 2)), 3)
+        self.assertEqual(try_exec(exec_item(func_test_globals, 1, 3)), 4)
+
+        self.assertEqual(try_exec(exec_item("func", 2, 2)), 4)
         self.assertEqual(try_exec(exec_item("self.func_test", 2, 3)), 5)
-        self.assertEqual(try_exec(exec_item("func_test_globals", 3, 4)), 7)
+        self.assertEqual(try_exec(exec_item("func_test_globals", 2, 4)), 6)
 
 
 def func_test_globals(a, b):

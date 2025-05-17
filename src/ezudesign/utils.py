@@ -23,10 +23,10 @@ def try_exec(exec_try: ExecItem, exec_except: Optional[ExecItem] = None) -> Any:
         raise TypeError(f"Expected `exec_except` to be ExecItem, but got {type(exec_except)}.")
 
     try:
-        if isinstance(exec_try.callback, ExecItem):
+        if callable(exec_try.callback):
             try_callable = exec_try.callback
 
-        if isinstance(exec_try.callback, str):
+        elif isinstance(exec_try.callback, str):
             attr_names = exec_try.callback.split(".")
             frame = inspect.currentframe().f_back
             for index, attr_name in enumerate(attr_names):
@@ -42,6 +42,9 @@ def try_exec(exec_try: ExecItem, exec_except: Optional[ExecItem] = None) -> Any:
 
             else:
                 try_callable = obj
+
+        else:
+            raise TypeError
 
         return try_callable(*exec_try.args, **exec_try.kwargs)
 
